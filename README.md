@@ -35,8 +35,8 @@ const LITHIC_API_KEY = "<API_KEY>";
 
 5. Paste the API key to a new `secret.tfvars` file at this repository root:
 
-```terraform
-management_api_key = "key_W8wA8CmcbwXxJsomxeWHVy"
+```shell
+echo 'management_api_key = "<key here>"' > secret.tfvars
 ```
 
 6. Initialize Terraform:
