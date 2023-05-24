@@ -4,12 +4,39 @@ This repository shows how to create and tokenize credit cards with the
 [Lithic Create Card API](https://docs.lithic.com/docs/cards#create-card) and
 forward this card to another API, for example
 [Knot Card Swap](https://docs.knotapi.com/docs/user-update), using
-[Basis Theory Proxy](https://docs.basistheory.com/#proxy).
+[Basis Theory Proxy]([https://docs.basistheory.com/#proxy](https://developers.basistheory.com/docs/concepts/what-is-the-proxy)).
 
 In this example we take 2 simple steps:
 
-1. Use Basis Theory Proxy to call tokenize card data returned from Lithic
-2. Use Basis theory Proxy to forward the tokenized card data to KnotAPI
+1. Use Basis Theory [Pre-Configured Proxy](https://developers.basistheory.com/docs/api/proxies/pre-configured-proxies) to call tokenize card data returned from Lithic
+
+   ```mermaid
+   sequenceDiagram
+     participant backend as Backend
+     participant proxy as Pre-configured Proxy
+     participant lithic as Lithic API
+
+   backend->>proxy: createCard
+   proxy->>lithic: createCard
+   lithic->>proxy: response(cardDetails)
+   proxy->>proxy: tokenizeCard
+   proxy->>backend: response(cardToken)
+   ```
+
+2. Use Basis Theory [Ephemeral Proxy](https://developers.basistheory.com/docs/api/proxies/ephemeral-proxy) to forward the tokenized card data to KnotAPI
+
+   ```mermaid   
+   sequenceDiagram
+     participant backend as Backend
+     participant proxy as Ephemeral Proxy
+     participant knot as Knot API
+
+   backend->>proxy: updateUser(cardToken)
+   proxy->>proxy: detokenizeCard
+   proxy->>knot: updateUser(cardDetails)
+   knot->>proxy: response
+   proxy->>backend: response
+   ```
 
 ## Run this POC
 
