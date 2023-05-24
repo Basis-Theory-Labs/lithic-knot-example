@@ -76,6 +76,8 @@ In this example we take 2 simple steps:
 7. Add your Lithic API Key to the `.env` file:
 
    ```text
+   BACKEND_APPLICATION_KEY=key_W8wA8CmcbwXxJsomxeWHVy
+   LITHIC_PROXY_KEY=TzbxKOVFabX1YZfrZsGVN5
    LITHIC_API_KEY=faf069d7-05ff-4d0e-b041-6c0d4d3c6f21
    ```
    You can find more information on how to get your Lithic Sandbox API Keys
