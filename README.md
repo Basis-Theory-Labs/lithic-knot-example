@@ -15,62 +15,43 @@ In this example we take 2 simple steps:
 
 1. Install dependencies
 
-```bash
-yarn || npm install
-```
+   ```bash
+   yarn install
+   ```
 
-2. Get your Lithic API Keys
+2. [Create a new Management Application](https://portal.basistheory.com/applications/create?name=Terraform&permissions=application%3Acreate&permissions=application%3Aread&permissions=application%3Aupdate&permissions=application%3Adelete&permissions=proxy%3Acreate&permissions=proxy%3Aread&permissions=proxy%3Aupdate&permissions=proxy%3Adelete&type=management) with full `application` and `proxy` permissions.
 
-You can find more information on how to get your Lithic Sandbox API Keys
-[here](https://docs.lithic.com/docs/quick-start-generate-api-key).
+3. Paste the API key to a new `terraform.tfvars` file at this repository root:
 
-3. Add Lithic API key to `index.js`
+    ```terraform
+    # Basis Theory Management Application Key
+    management_api_key = "key_W8wA8CmcbwXxJsomxeWHVy"
+    ```
 
-```javascript
-const LITHIC_API_KEY = "<API_KEY>";
-```
+4. Initialize Terraform:
 
-4. [Create a new Management Application](https://portal.basistheory.com/applications/create?name=Terraform&permissions=application%3Acreate&permissions=application%3Aread&permissions=application%3Aupdate&permissions=application%3Adelete&permissions=proxy%3Acreate&permissions=proxy%3Aread&permissions=proxy%3Aupdate&permissions=proxy%3Adelete&type=management)
-   with full `application` and `proxy` permissions.
+    ```shell
+    terraform init
+    ```
 
-5. Paste the API key to a new `secret.tfvars` file at this repository root:
+5. Run Terraform to provision all the required resources:
 
-```shell
-echo 'management_api_key = "<key here>"' > secret.tfvars
-```
+    ```shell
+    terraform apply
+    ```
 
-6. Initialize Terraform:
-
-```shell
-terraform init
-```
-
-7. And run Terraform to provision all the required resources:
-
-```shell
-terraform apply -var-file=secret.tfvars
-```
-
-8. Output your secrets as a json and update `credentials` in index.js with the
-   JSON.
+6. Generate a Node.js `.env` file based off Terraform outputs:
 
    ```shell
-   terraform output -json
+   echo "BACKEND_APPLICATION_KEY=$(terraform output -raw backend_application_key)\nLITHIC_PROXY_KEY=$(terraform output -raw lithic_proxy_key)\nLITHIC_API_KEY=" > .env
    ```
 
-   ```js
-   const credentials = {
-     "inbound_proxy_key": {
-       "sensitive": true,
-       "type": "string",
-       "value": "<sensitive value>",
-     },
-     "proxy_application": {
-       "sensitive": true,
-       "type": "string",
-       "value": "<sensitive value>",
-     },
-   };
-   ```
+7. Add your Lithic API Key to the `.env` file:
 
-9. Run `node index.js`
+   ```text
+   LITHIC_API_KEY=faf069d7-05ff-4d0e-b041-6c0d4d3c6f21
+   ```
+   You can find more information on how to get your Lithic Sandbox API Keys
+   [here](https://docs.lithic.com/docs/quick-start-generate-api-key).
+   
+8. Run `yarn start`
