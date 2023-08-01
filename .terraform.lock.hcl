@@ -5,7 +5,7 @@ provider "registry.terraform.io/basis-theory/basistheory" {
   version     = "0.8.0"
   constraints = ">= 0.8.0"
   hashes = [
-    "h1:FHso5CoB9uWmPchKhGuBk6hcoAI28hjN4P5/iSIQELk=",
+    "h1:MQUsA0ed5lK+b6DrrWbNnZlwHnKmzov/+P3dsNZ351E=",
     "zh:0dfb8782351320a43211ce39ec355e341baabf5a11dff358890b701dc4cdf3d7",
     "zh:0efe3d84436e1e1b1662cb642da017a7481253ffbaf61dba49f892d992f84e9d",
     "zh:2005a9629f2a173b91aad01cff8d8d806782b23d629528d2075b6b0d223709bb",

@@ -20,22 +20,37 @@ function makeVirtualCard(bt) {
 function makeKnotCardSwap(bt, virtualCard) {
   return bt.proxy.post({
     headers: {
-      "BT-PROXY-URL": "https://echo.basistheory.com/anything",
-      // 'BT-PROXY-URL': 'https://secure.development.knotapi.com/user/update',
+      'BT-PROXY-URL': 'https://secure.development.knotapi.com/user/create',
     },
     body: {
-      client_id: "c9c4c5aa7b4e4ad7af073e8e39b1c7cf",
-      secret: "cf819749c0574616ba93b5935b8cf108",
-      card: {
-        number: `{{${virtualCard.cardToken.id} | json: '$.number'}}`,
-        expiration: `{{${virtualCard.cardToken.id} | json: '$.expiration_month'}}/{{${virtualCard.cardToken.id} | json: '$.expiration_year'}}`,
-        cvv: `{{${virtualCard.cardToken.id} | json: '$.cvc'}}`,
+      client_id: process.env.KNOT_CLIENT_ID,
+      secret: process.env.KNOT_API_SECRET,
+      user: {
+        external_user_id: "123456789",
+        name: {
+          first_name: "John",
+          last_name: "Doe"
+        },
+        phone_number: "+5555555555",
+        address: {
+          street: "123 Main St",
+          city: "San Francisco",
+          region: "CA",
+          postal_code: "94103",
+          country: "US"
+        },
       },
-    },
+      card: {
+          number: `{{${virtualCard.cardToken.id} | json: '$.number'}}`,
+          expiration: `{{${virtualCard.cardToken.id} | json: '$.expiration_month'}}/{{${virtualCard.cardToken.id} | json: '$.expiration_year'}}`,
+          cvv: `{{${virtualCard.cardToken.id} | json: '$.cvc'}}`
+      },
+    }
   });
 }
 
 async function makeCards() {
+  console.log(process.env.BACKEND_APPLICATION_KEY)
   const bt = await new BasisTheory().init(process.env.BACKEND_APPLICATION_KEY);
 
   const virtualCard = await makeVirtualCard(bt);
@@ -47,10 +62,10 @@ async function makeCards() {
 
   const knotResponse = await makeKnotCardSwap(bt, virtualCard);
 
-  console.log("");
-  console.log("---RESPONSE FROM ECHO----------------------------");
-  console.log("---THIS SHOWS WHAT WOULD BE SENT TO KNOT---------");
-  console.log(knotResponse.json);
+  console.log("")
+  console.log("---RESPONSE FROM KNOT----------------------------")
+  console.log("---THIS IS YOUR USER'S ACCESS TOKEN FOR FUTURE CALLS---------")
+  console.log(knotResponse);
 }
 
 makeCards();
