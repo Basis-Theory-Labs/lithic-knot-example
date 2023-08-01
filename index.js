@@ -50,7 +50,7 @@ function makeKnotCardSwap(bt, virtualCard) {
 }
 
 async function makeCards() {
-  console.log(process.env.BACKEND_APPLICATION_KEY)
+  
   const bt = await new BasisTheory().init(process.env.BACKEND_APPLICATION_KEY);
 
   const virtualCard = await makeVirtualCard(bt);
