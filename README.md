@@ -1,100 +1,79 @@
 # Lithic / Knot Example
 
-This repository shows how to create and tokenize credit cards with the
-[Lithic Create Card API](https://docs.lithic.com/docs/cards#create-card) and
-forward this card to another API, for example
-[Knot Card Swap](https://docs.knotapi.com/docs/user-update), using
-[Basis Theory Proxy]([https://docs.basistheory.com/#proxy](https://developers.basistheory.com/docs/concepts/what-is-the-proxy)).
+This repository shows how to use a [Reactor](https://developers.basistheory.com/docs/concepts/what-are-reactors) to [retrieve card details from Lithic](https://docs.lithic.com/docs/cards#get-specific-card) forward it to 
+[Knot Card Swap API](https://docs.knotapi.com/docs/card).
 
-Once you have a `Management API Key` everything else is managed in your codebase
-and this example we take 2 simple steps to make issuing and card swapping
-seemless:
+```mermaid
+sequenceDiagram
+  participant backend as Backend
+  participant reactor as Basis Theory Reactor
+  participant lithic as Lithic API
+  participant knot as Knot API
 
-1. Use Basis Theory
-   [Pre-Configured Proxy](https://developers.basistheory.com/docs/api/proxies/pre-configured-proxies)
-   to call tokenize card data returned from Lithic
+backend->>reactor: switchCard(cardToken, userInfo)
+reactor->>lithic: retrieveCard(cardToken)
+lithic-->>reactor: cardDetails
+reactor->>knot: postCard(cardDetails, userInfo)
+knot-->>reactor: ok
+reactor-->>backend: ok
+```
 
-   ```mermaid
-   sequenceDiagram
-     participant backend as Backend
-     participant proxy as Pre-configured Proxy
-     participant lithic as Lithic API
+## Terraform
 
-   backend->>proxy: createCard
-   proxy->>lithic: createCard
-   lithic->>proxy: response(cardDetails)
-   proxy->>proxy: tokenizeCard
-   proxy->>backend: response(cardToken)
-   ```
+Create a new `terraform.tfvars` file based off `terraform.tfvars.example`, replace the necessary values.
 
-2. Use Basis Theory
-   [Ephemeral Proxy](https://developers.basistheory.com/docs/api/proxies/ephemeral-proxy)
-   to forward the tokenized card data to KnotAPI
+The `bt_management_api_key` should have `application:*` and `reactor:*` permissions. [Click here](https://portal.basistheory.com/applications/create?permissions=application%3Acreate&permissions=application%3Aread&permissions=application%3Aupdate&permissions=application%3Adelete&permissions=reactor%3Acreate&permissions=reactor%3Aread&permissions=reactor%3Aupdate&permissions=reactor%3Adelete&type=management&name=Terraform) to create a new management application using the Portal.
 
-   ```mermaid
-   sequenceDiagram
-     participant backend as Backend
-     participant proxy as Ephemeral Proxy
-     participant knot as Knot API
+Create resources using:
 
-   backend->>proxy: updateUser(cardToken)
-   proxy->>proxy: detokenizeCard
-   proxy->>knot: updateUser(cardDetails)
-   knot->>proxy: response
-   proxy->>backend: response
-   ```
+```shell
+terraform apply
+```
 
-3. Store the `knot_access_token` with your user and you are free to call the
-   [KnotAPI](https://docs.knotapi.com/docs/user) directly from your code without
-   proxying any additioal calls through Basis Theory - avoiding any latency
-   concerns!
+It should give you two outputs:
 
-## Run this POC
+```text
+backend_application_key = <sensitive>
+knot_reactor_id = "124da2af-afef-45d3-9850-4f017dece05d"
+```
 
-1. Install dependencies
+## Invoking the Reactor
 
-   ```bash
-   yarn install
-   ```
+Using the outputs from the previous step, [invoke](https://developers.basistheory.com/docs/api/reactors/#invoke-a-reactor) the Reactor using:
 
-2. [Create a new Management Application](https://portal.basistheory.com/applications/create?name=Terraform&permissions=application%3Acreate&permissions=application%3Aread&permissions=application%3Aupdate&permissions=application%3Adelete&permissions=proxy%3Acreate&permissions=proxy%3Aread&permissions=proxy%3Aupdate&permissions=proxy%3Adelete&type=management)
-   with full `application` and `proxy` permissions.
+```shell
+curl -L 'https://api.basistheory.com/reactors/{{knot_reactor_id}}/react' \
+-H 'Content-Type: application/json' \
+-H 'Accept: application/json' \
+-H 'BT-API-KEY: {{backend_application_key}}' \
+-d '{
+    "args": {
+        "lithicCardToken": "0fb6a486-9743-417c-80a1-ba57ed361f7b",
+        "user": {
+            "name": {
+                "first_name": "John",
+                "last_name": "Smith"
+            },
+            "address": {
+                "street": "348 WEST 57TH STREET",
+                "street2": "#367",
+                "city": "NEW YORK",
+                "region": "NY",
+                "postal_code": "10019",
+                "country": "US"
+            },
+            "phone_number": "+14155550123"
+        }
+    }
+}'
+```
 
-3. Paste the API key to a new `terraform.tfvars` file at this repository root:
+## CLI
 
-   ```terraform
-   # Basis Theory Management Application Key
-   management_api_key = "key_W8wA8CmcbwXxJsomxeWHVy"
-   ```
+You can connect to Reactor's console logs using [Basis Theory CLI](https://www.npmjs.com/package/@basis-theory-labs/cli).
 
-4. Initialize Terraform:
+```shell
+bt reactors update $knot_reactor_id -r reactor.js -x $bt_management_api_key -lw
+```
 
-   ```shell
-   terraform init
-   ```
-
-5. Run Terraform to provision all the required resources:
-
-   ```shell
-   terraform apply
-   ```
-
-6. Generate a Node.js `.env` file based off Terraform outputs:
-
-   ```shell
-   echo "BACKEND_APPLICATION_KEY=$(terraform output -raw backend_application_key)\nLITHIC_PROXY_KEY=$(terraform output -raw lithic_proxy_key)\nLITHIC_API_KEY=\nKNOT_API_SECRET=\nKNOT_CLIENT_ID=" > .env
-   ```
-
-7. Add your Lithic API Key, Knot API Key, and Knot Client Id to the `.env` file:
-
-   ```text
-   BACKEND_APPLICATION_KEY=key_W8wA8CmcbwXxJsomxeWHVy
-   LITHIC_PROXY_KEY=TzbxKOVFabX1YZfrZsGVN5
-   LITHIC_API_KEY=faf069d7-05ff-4d0e-b041-6c0d4d3c6f21
-   KNOT_API_SECRET=e6515555efc84ab097a5af7baa551982
-   KNOT_CLIENT_ID=555555-aae3-4cd5-8c5e-64cd293c0451
-   ```
-   You can find more information on how to get your Lithic Sandbox API Keys
-   [here](https://docs.lithic.com/docs/quick-start-generate-api-key).
-
-8. Run `yarn start`
+> ⚠️ When deploying changes using Terraform, it is necessary to reconnect to the Reactor

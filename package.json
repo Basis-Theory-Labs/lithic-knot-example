@@ -1,13 +1,15 @@
 {
   "name": "lithic-knot-example",
   "version": "1.0.0",
-  "description": "This repository shows how to create and tokenize credit cards with the [Lithic Create Card API](https://docs.lithic.com/docs/cards#create-card) and forward this card to another API, for example [Knot Card Swap](https://docs.knotapi.com/docs/user-update), using [Basis Theory Proxy](https://docs.basistheory.com/#proxy).",
   "main": "index.js",
   "dependencies": {
-    "@basis-theory/basis-theory-js": "^1.74.0",
-    "dotenv": "^16.0.3"
+    "@basis-theory/basis-theory-reactor-formulas-sdk-js": "^1.4.0",
+    "axios": "^1.5.1"
   },
-  "scripts": {
-    "start": "node -r dotenv/config index.js"
+  "devDependencies": {
+    "prettier": "^3.0.3"
+  },
+  "prettier": {
+    "singleQuote": true
   }
 }

@@ -1,2 +1,5 @@
 # Basis Theory Management Application Key
-management_api_key = "key_W8wA8CmcbwXxJsomxeWHVy"
+management_api_key = ""
+knot_client_id = ""
+knot_api_secret = ""
+lithic_api_key = ""

@@ -2,12 +2,15 @@ terraform {
   required_providers {
     basistheory = {
       source  = "basis-theory/basistheory"
-      version = ">= 0.8.0"
+      version = ">= 1.0.0"
     }
   }
 }
 
 variable "management_api_key" {}
+variable "lithic_api_key" {}
+variable "knot_client_id" {}
+variable "knot_api_secret" {}
 
 provider "basistheory" {
   api_key = var.management_api_key
@@ -21,32 +24,22 @@ resource "basistheory_application" "backend_application" {
   ]
 }
 
-resource "basistheory_application" "lithic_proxy_application" {
-  name        = "Lithic Proxy Application"
-  type        = "private"
-  permissions = [
-    "token:create",
-  ]
-}
-
-resource "basistheory_proxy" "lithic_proxy" {
-  name               = "Lithic Tokenizer"
-  destination_url    = "https://sandbox.lithic.com/v1/cards"
-  require_auth       = true
-  response_transform  = {
-    code = file("./proxy/lithic-proxy-response-transform.js")
+resource "basistheory_reactor" "knot_reactor" {
+  name          = "Knot Reactor"
+  code          = file("reactor.js")
+  configuration = {
+    LITHIC_API_KEY  = var.lithic_api_key
+    KNOT_CLIENT_ID  = var.knot_client_id
+    KNOT_API_SECRET = var.knot_api_secret
   }
-  application_id = basistheory_application.lithic_proxy_application.id
-}
-
-output "lithic_proxy_key" {
-  value       = basistheory_proxy.lithic_proxy.key
-  description = "Lithic Proxy Key"
-  sensitive   = true
 }
 
 output "backend_application_key" {
   value       = basistheory_application.backend_application.key
   description = "Backend API Key"
   sensitive   = true
+}
+
+output "knot_reactor_id" {
+  value = basistheory_reactor.knot_reactor.id
 }
